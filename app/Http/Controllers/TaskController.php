@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -10,6 +11,9 @@ class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * En este punto hacemos el llamado de todo lo que tenemos en nuestra base de datos, lo que nos permite
+     * con el eloquent asignamos una variable $tasks la que sera igual a las tareas
+     * y luego retornamos los datos del arreglo
      */
     public function index()
     {
@@ -19,32 +23,13 @@ class TaskController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * En este punto movimos la configuración de store a request por buenas practicas, aqui lo que hacemos es que en los parametros
+     * de la funcion store llamamos taskRequest que es el que nos traera los mensajes, que estamos necesitando, luego de eso
+     * confirmamos la creación y respondemos, si da error mostraremos el error en base a lo que falle.
      */
-    public function store(Request $request)
+    public function store(TaskRequest $request)
     {
-
-        $validated =$request->validate([ // esta funcion la creo para hacer las validaciones
-            'titulo'=>'required|string|min:3|max:255', // aqui le digo que es requerido, es texto con minimo 3 y maximo 255
-            'descripcion'=>'nullable|string|max:500', // le digo que puede ser nulo, pero con maximo 500 caract
-            'estado'=>'boolean', // pues el true o false 
-            'prioridad'=>'integer|between:1,5', //numero que sea de 1 a 5
-        
-        ], [ // aqui hago los valores que se deberan de cumplir
-            'titulo.required'=>'El titulo no puede ir vacio',
-            'titulo.string'=>'El titulo debe ser texto',
-            'titulo.min'=>'El titulo debe tener al menos 3 caracteres',
-            'titulo.max'=>'El titulo no puede superar los 255 caracteres',
-
-            'descripcion.string'=>'La descripcion debe ser texto',
-            'descripcion.max'=>'La descripcion no puede superaar los 500 caracteres',
-
-            'estado.boolean'=>'El estado debe ser boolean',
-
-            'prioridad.integer'=>'La prioridad debe ser un numero',
-            'prioridad.between'=>'La prioridad debe estar entre 1 y 5',
-
-        ]);
-
+        $validated = $request->validated();
         $task = Task::create($validated); /// aqui confirmamos la creación
 
         return response()->json([
@@ -63,6 +48,9 @@ class TaskController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * En esta funcion hacemos la actualizacion es importante tener en cuenta que para esta actualizacion
+     * tambien hacemos las validaciones las cuales deben cumplirse por que no se puede actualizar un dato de manera incorrecta
+     * 
      */
     public function update(Request $request, Task $task)
     {
@@ -81,6 +69,7 @@ class TaskController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * aqui eliminamos con exito el registro
      */
     public function destroy(Task $task)
     {
